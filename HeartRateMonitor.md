@@ -1,294 +1,267 @@
-WorkSense Pulse — Sensor de Ritmo Cardiaco (ESP32 + MAX3010x + TTS)
+# WorkSense HR — Sensor de Ritmo Cardíaco para Puestos de Trabajo (BPM • Voz • Alertas)
 
-Biofeedback en el puesto de trabajo. Un sensor de pulso (MAX3010x) embebido en el mouse mide BPM en tiempo real; el ESP32 muestra semáforo (NeoPixel), emite beeps/sirena cuando sales de rango y, si la condición persiste, pide al server FastAPI un audio de guía (TTS), lo reproduce por el DAC interno y deja en consola el texto y la URL del WAV.
+> **Idea:** Un mouse “consciente” del estado fisiológico de la persona. El sensor MAX3010x (en el mouse o cerca de la mano) mide el pulso y el ESP32 **emite sonidos** y, opcionalmente, **voz** generada por un servidor local. **Objetivo:** avisar cuando el ritmo está **bajo** o **alto**, guiar una respiración breve y registrar el mensaje/URL del audio para auditoría.
 
-⚠️ No es un dispositivo médico. Prototipo para bienestar/foco. No sustituye evaluaciones clínicas ni de seguridad ocupacional.
+---
 
-🗂️ Tabla de contenidos
+## 🧭 Pitch (30 s)
 
-Pitch (30 s)
+**WorkSense HR** transforma el pulso en señales **claras y accionables**: semáforo de color, beeps y mensajes hablados (“inhala 4, sostén 2, exhala 6”). Cuando el BPM sale de rango, el sistema **alerta de forma continua** hasta volver a valores normales. Un servidor FastAPI genera audios en español y devuelve el **URL**; el ESP32 imprime en serie **qué dijo** y **dónde quedó el archivo**.
 
-Qué verás (LED + Sonidos + Consola)
+---
 
-Arquitectura
+## 👀 Qué muestra / hace en tiempo real
 
-Hardware & Cableado
+* **Estado general (NeoPixel):**
 
-Estructura del repo
+  * 🟢 Verde: BPM **estable** (50–110)
+  * 🟡 Amarillo: **precaución** (50> BPM ≥40 o 110< BPM ≤130)
+  * 🔴 Rojo: **alerta** (BPM <40 o >130)
+* **Sonidos:**
 
-Instalación y ejecución
+  * ✅ `beep_ok()` al estabilizarse.
+  * ⚠️ `beep_warn_low()` / `beep_warn_high()` **cada 2 s** si está fuera de rango (precaución).
+  * 🚨 `sirena_alerta()` **cada 1.5 s** si está en alerta.
+* **Voz (opcional, vía servidor):** al sostenerse fuera de rango por ventana de 5 s:
 
-Servidor (FastAPI/TTS)
+  * Mensaje **calmante** (alto/bajo) + reproducción automática.
+  * En el **Serial** verás:
 
-Firmware (ESP32)
+    * **Texto** que dijo el audio.
+    * **URL** del `.wav` (p. ej. `http://192.168.0.8:8000/out/tts8k_...wav`).
 
-Reglas de decisión y umbrales
+**Nudges rotativos (idea):** “Respiremos 4–2–6”, “Tómate una pausa breve”, “Ajusta postura y hombros”.
 
-API del servidor
+---
 
-Demostración rápida
+## 📝 Informe diario (opcional)
 
-Privacidad
+Si combinas este módulo con tu *WorkSense Wall*, puedes registrar:
 
-Solución de problemas
+* **Eventos fuera de rango:** hora de inicio/fin, tipo (bajo/alto).
+* **Mensajes reproducidos:** texto + URL del audio (trazabilidad).
+* **% tiempo estable** por persona/puesto (no médico, orientativo).
 
-Roadmap
+> Los CSV y los audios se guardan localmente en el servidor (`/out/`). El informe diario puede redactarse con Gemini (igual que el proyecto de ambiente).
 
-KPI (para RRHH/Workplace)
+---
 
-Licencia / Disclaimer
+## 🔧 Sensores y métricas (hardware)
 
-🧭 Pitch (30 s)
+* **MAX3010x (MAX30102/105)** en el mouse o reposamanos.
 
-WorkSense Pulse convierte la señal del MAX3010x en señales claras: OK, precaución y alerta. Si el pulso se mantiene fuera de rango, suenan beeps/sirena y el ESP32 solicita al servidor un mensaje de calma que reproduce por altavoz. En consola se imprime el texto y la URL del audio, útil para auditoría y correlación con el ambiente (ruido, luz, temperatura) del proyecto WorkSense Wall.
+  * Pines: `SDA=21`, `SCL=22`.
+  * **IR objetivo** con dedo: **\~80k–140k** (ajusta `ledBrightness`/`pulseWidth`).
+* **NeoPixel** en `IO2` (1 LED, semáforo).
+* **Salida de audio**: `DAC GPIO26` → **amplificador** (p. ej. LM386) → parlante.
 
-👀 Qué verás (LED + Sonidos + Consola)
+  * Acopla con **condensador 0.047–0.1µF** y referencia con \~10k a GND.
 
-LED (NeoPixel en IO2):
+---
 
-🟢 Verde: en rango
+## 🏗️ Arquitectura
 
-🟡 Amarillo: precaución (ligeramente bajo/alto)
+```
+[Usuario] ─ mano → Sensor MAX3010x ─(I2C)─ ESP32
+    │                       │
+    │            Estados/sonidos locales (beeps/sirena)
+    │                       │ Wi-Fi
+    └────────►  Servidor FastAPI (PC) ──► TTS (pyttsx3+pydub) ─► WAV 8k/8-bit
+                                 │
+                                 └─ /out/tts8k_*.wav  (URL devuelto + reproducido)
+```
 
-🔴 Rojo: alerta (muy bajo/muy alto)
+---
 
-✴️ Flash rojo corto en cada latido detectado
+## 🚀 Instalación rápida (demo local)
 
-Sonidos:
+### 1) Servidor (PC)
 
-Precaución: beep doble periódico (grave para bajo, agudo para alto)
+Requisitos: Python 3.10+, **ffmpeg** embebido (lo maneja `imageio-ffmpeg`), salida de audio **8kHz/8-bit/mono**.
 
-Alerta: sirena barrida periódica
-
-TTS: guía breve cuando se sostiene la condición (voz)
-
-Consola serie (cada ~1.8 s):
-
-IR=102345  BPM=76.5  Avg BPM=77
-[TTS] Texto:
-Tu ritmo es elevado. Vamos a respirar juntas...
-[TTS] URL: http://192.168.0.8:8000/out/tts8k_2025...
-
-🏗️ Arquitectura
-MAX3010x ──(I²C: SDA21/SCL22)── ESP32 ── Wi-Fi ──► FastAPI/TTS (PC)
-     │                             │
-     └─► NeoPixel (IO2)            └─► DAC (IO26) → LM386 → Parlante
-
-
-ESP32 (Arduino): lee IR, detecta latidos (heartRate.h), suaviza (AVG 4 muestras), decide estado, genera beeps/sirena, solicita /reply y reproduce WAV 8 kHz/8-bit con el DAC interno.
-
-Server (FastAPI): POST /reply crea TTS (pyttsx3+pydub) → WAV mono 8 kHz 8-bit y lo sirve en /out/....
-(Opcional) POST /coach usa Gemini para redactar el texto antes del TTS.
-
-🔧 Hardware & Cableado
-
-Componentes
-
-ESP32 (DevKitC u otro con DAC en GPIO 26)
-
-Sensor MAX30102 / MAX30105
-
-NeoPixel 1 LED (IO2)
-
-LM386 + parlante 8 Ω
-
-Condensador 0.047–0.1 µF en serie y resistor 10 kΩ a GND en la entrada del LM386 (filtra DC)
-
-Cables cortos, GND común
-
-Pinout
-
-Señal	ESP32
-MAX3010x SDA	21
-MAX3010x SCL	22
-NeoPixel DIN	2
-DAC → LM386 IN	26
-3V3/VIN + GND	—
-📁 Estructura del repo
-/worksense-pulse/
-  /firmware/
-    esp32_max3010x_pulse_tts.ino
-  /server/
-    server.py
-    requirements.txt
-    .env.example
-  /docs/
-    README.md
-
-
-server/requirements.txt
-
-fastapi
-uvicorn[standard]
-python-dotenv
-pydub
-imageio-ffmpeg
-pyttsx3
-google-generativeai
-
-
-.env.example
-
-# Solo necesario si usarás /coach (Gemini)
-GEMINI_API_KEY=TU_API_KEY
-
-🚀 Instalación y ejecución
-Servidor (FastAPI/TTS)
-
-Instala dependencias:
-
+```bash
+# Clona tu repo y entra a la carpeta del server
 cd server
+
+# (opcional) Entorno virtual
 python -m venv .venv
-source .venv/bin/activate  # en Windows: .venv\Scripts\activate
-pip install -r requirements.txt
+# Win
+.venv\Scripts\activate
+# macOS/Linux
+source .venv/bin/activate
 
+pip install fastapi uvicorn pydub imageio-ffmpeg pyttsx3 python-dotenv google-generativeai
+```
 
-(Opcional) Copia .env.example a .env y agrega GEMINI_API_KEY si usarás /coach.
+Crea **`.env`**:
 
-Arranca el server:
+```dotenv
+GEMINI_API_KEY=TU_API_KEY
+```
 
+Lanza el servidor:
+
+```bash
 uvicorn server:app --host 0.0.0.0 --port 8000 --reload
+```
 
+Endpoints clave:
 
-Prueba:
+* `GET /ping` → `{ "ok": true, "msg": "pong" }`
+* `POST /reply` → body `{ "text": "..." }` → `{ "ok": true, "audio_url": "/out/tts8k_....wav" }`
+* `POST /coach` → body `{ "bpm": 120, "avg": 118 }` → `{ "ok": true, "text": "...", "audio_url": "/out/..." }`
 
-curl http://<IP_PC>:8000/ping
-# -> {"ok": true, "msg": "pong"}
+> El servidor genera audios WAV **8kHz/8-bit/mono** (aptos para el DAC interno del ESP32) y los sirve desde `/out/`.
 
+---
 
-Ten el PC y el ESP32 en la misma red. Desactiva firewall para el puerto 8000 si es necesario.
+### 2) Firmware en ESP32
 
-Firmware (ESP32)
+* **IDE Arduino** (o PlatformIO).
+* **Librerías:**
 
-Abre esp32_max3010x_pulse_tts.ino y ajusta:
+  * *SparkFun MAX3010x Sensor Library* (incluye `heartRate.h`)
+  * *Adafruit NeoPixel*
+* **Placa:** “ESP32 Dev Module”.
 
+En el **sketch** (archivo `.ino`) ajusta:
+
+```cpp
 const char* SSID        = "ARRIS-5308";
 const char* PASS        = "50A5DC0A5308";
 const char* SERVER_HOST = "192.168.0.8";
 const uint16_t SERVER_PORT = 8000;
+```
 
+Cableado rápido:
 
-Sube el sketch y abre Monitor Serie @115200.
+```
+MAX3010x  SDA → GPIO21
+          SCL → GPIO22
+NeoPixel  DIN → GPIO2
+Audio     DAC → GPIO26 → LM386 → Parlante
+GNDs comunes — 3V3 a sensor (según módulo)
+```
 
-Coloca el dedo en el sensor y verifica que aparecen BPM y flashes por latido.
+Sube el firmware. Abre el **Serial Monitor** a **115200**.
 
-🧠 Reglas de decisión y umbrales
-// Umbrales
-const int BPM_LOW        = 50;     // precaución bajo
-const int BPM_HIGH       = 110;    // precaución alto
-const int BPM_ALERT_LOW  = 40;     // alerta muy bajo
-const int BPM_ALERT_HIGH = 130;    // alerta muy alto
+---
 
-// Ventanas / periodos
-const unsigned long WINDOW_MS             = 5000;   // sostener fuera de rango
-const unsigned long ALERT_COOLDOWN_MS     = 30000;  // TTS cada 30 s máximo
-const unsigned long WARN_BEEP_PERIOD_MS   = 2000;   // beep precaución
-const unsigned long ALERT_SIREN_PERIOD_MS = 1500;   // sirena alerta
+## ⚙️ Umbrales y lógica de alertas
 
+* **Normal:** `50 ≤ BPM ≤ 110` → verde.
+* **Precaución:** `40 ≤ BPM < 50` o `110 < BPM ≤ 130` → amarillo + **beep** cada 2 s.
+* **Alerta:** `BPM < 40` o `BPM > 130` → rojo + **sirena** cada 1.5 s.
+* **Ventana de disparo TTS:** 5 s sostenidos fuera de rango → pedir audio al server.
+* **Cooldown de TTS:** 30 s entre mensajes de calma.
+* **Serial:** imprime **texto** del TTS y **URL** del WAV (p.ej. `http://192.168.0.8:8000/out/tts8k_...wav`).
 
-OK (50–110): LED verde, sin sonido
+---
 
-Precaución (40–50 o 110–130): LED amarillo + beeps cada 2 s
+## ▶️ Uso
 
-Alerta (<40 o >130): LED rojo + sirena cada 1.5 s
+1. Ejecuta el **servidor** (ver arriba).
+2. Enciende el **ESP32**; espera “WiFi OK…”.
+3. **Coloca el dedo** tapando el sensor (evita luz externa).
+4. Observa en **Serial**: `IR=... BPM=... Avg BPM=...`
+5. Si sales de rango: escucharás **beeps** o **sirena**; tras 5 s, el ESP32 pedirá TTS y **reproducirá** el audio.
+6. El **texto** reproducido y la **URL del audio** quedan impresos en el Serial.
 
-Si fuera de rango ≥ 5 s ⇒ TTS (cooldown 30 s): imprime texto y URL y reproduce voz
+---
 
-🌐 API del servidor
-GET /ping
+## 🌐 API (pruebas rápidas)
 
-Salud del servidor.
+```bash
+# Comprobar servidor
+curl http://192.168.0.8:8000/ping
 
-{"ok": true, "msg": "pong"}
+# Generar un audio arbitrario
+curl -X POST http://192.168.0.8:8000/reply \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Respiremos juntas. Inhala cuatro, sostén dos, exhala seis."}'
+# → {"ok":true,"audio_url":"/out/tts8k_...wav"}
+```
 
-POST /reply
+Abre el URL devuelto en un navegador para verificar el WAV.
 
-Genera TTS desde texto.
+---
 
-Body:
+## 🛠️ Solución de problemas
 
-{"text": "Tu ritmo es elevado. Inhala 4, sostén 2, exhala 6."}
+**BPM = 0 siempre**
 
+* Asegura **contacto firme** del dedo y **bloquea luz** ambiente.
+* Revisa que `IR` en Serial esté **> 50,000** con el dedo puesto.
+* Ajusta en `setup()`:
 
-Respuesta:
+  * `ledBrightness` (sube si IR bajo; baja si satura),
+  * `pulseWidth`,
+  * `sampleRate` (100–200 Hz).
+* Comprueba cableado SDA/SCL y GND comunes.
+* Verifica que usas la **librería SparkFun MAX3010x** correcta (incluye `heartRate.h`).
 
-{"ok": true, "audio_url": "/out/tts8k_2025...wav"}
+**Audio suena “sucio” o distorsiona**
 
-POST /coach (opcional)
+* El DAC interno es 8-bit; usa **acoplo por capacitor** y **ganancia moderada** en el LM386.
+* Reduce volumen en `playToneDAC(..., volume)` o la ganancia del ampli.
+* Revisa GNDs y longitud de cables.
+* (Avanzado) Cambiar a salida **I2S** con APLL para audio más limpio.
 
-Crea texto con Gemini según BPM y luego TTS.
+**No llega el TTS**
 
-Body:
+* Mira el **log** del servidor (debe aparecer `GET /out/...` tras el `POST /reply`).
+* Revisa `SERVER_HOST`/`SERVER_PORT`, firewall y que `/out/` se sirva.
+* Comprueba que el server imprime `[FFMPEG]`, y que `pyttsx3` puede sintetizar (en Windows suele necesitar voces instaladas).
 
-{"bpm": 125, "avg": 120}
+---
 
+## 🔒 Privacidad y alcance
 
-Respuesta:
+* No se envía audio de la persona; solo **BPM** y mensajes TTS.
+* Datos de salud **no clínicos**; **no** sustituye evaluación médica.
+* Los audios y logs quedan **locales** en tu red.
 
-{"ok": true, "text": "...", "audio_url": "/out/tts8k_..." }
+---
 
-🧪 Demostración rápida
+## 🧪 Flujo de demo (2 min)
 
-Coloca el dedo; verás BPM y Avg BPM en la consola.
+1. Conectas servidor + ESP32.
+2. Pones el dedo y observas **BPM** subir/bajar (hacer respiración rápida/lenta).
+3. Sales de rango → **beeps/sirena**; a los 5 s → **voz** con respiración guiada.
+4. En **Serial**: texto + URL del WAV. (Abre el enlace para oírlo de nuevo.)
 
-Simula alto BPM (mueve/aprieta dedo) → amarillo/rojo + beeps/sirena.
+---
 
-Tras ~5 s, el ESP32 pide TTS → suena voz; en serie: Texto y URL.
+## 🗺️ Roadmap
 
-Regresa a rango → verde y silencio.
+* [ ] Guardar eventos (hora, BPM, texto, URL) en CSV.
+* [ ] Enviar alertas a *WorkSense Wall* para correlacionar con ruido/luz.
+* [ ] Modo “entrenador” con `/coach` (Gemini) activo.
+* [ ] Salida **I2S** para voz más limpia.
 
-🔒 Privacidad
+---
 
-No se envía audio crudo ni PII.
+## 📁 Estructura sugerida del repo
 
-Solo métricas agregadas y mensajes breves.
+```
+/heart-rate/
+  firmware/
+    esp32_hr_monitor.ino      # este sketch
+  server/
+    server.py                 # FastAPI + TTS (8k/8-bit/mono)
+    .env.example              # plantilla de variables
+  docs/
+    README_HR.md              # este documento
+```
 
-Logs locales para depuración y mejora.
+---
 
-🛠️ Solución de problemas
+## ⚠️ Disclaimer
 
-BPM = 0 / “No finger?”
+Prototipo con fines de **bienestar** y **productividad**. **No es** un dispositivo médico ni reemplaza evaluaciones profesionales.
 
-Cubre bien el sensor; evita luz ambiente directa.
+---
 
-Ajusta ledBrightness (sube a 0x80) o pulseWidth=411 si el IR es bajo; baja si satura.
+## 📜 Licencia
 
-Objetivo IR con dedo: 60k–140k.
-
-Zumbido/distorsión en audio
-
-Verifica el condensador (0.047–0.1 µF) en serie y 10 kΩ a GND en la entrada del LM386.
-
-Cables cortos y GND común.
-
-Este diseño usa 8 kHz/8-bit por DAC; para mayor calidad, migrar a I2S.
-
-No reproduce pero imprime URL
-
-Asegura que el ESP32 puede acceder a http://SERVER_HOST:PORT/out/... (misma red).
-
-Server activo en puerto 8000 y firewall permitido.
-
-🗺️ Roadmap
-
-Perfil personal (rango adaptativo)
-
-Reproductor I2S (mejor SNR)
-
-Exportar eventos a CSV/JSON para el dashboard
-
-UI de calibración (umbral, brillo, PWM)
-
-📊 KPI (para RRHH/Workplace)
-
-% tiempo en rango por puesto/persona
-
-Eventos alto/bajo (hora y duración)
-
-Minutos en alerta
-
-Tendencias por día/semana; correlación con ruido/luz/temperatura (WorkSense Wall)
-
-📜 Licencia / Disclaimer
-
-Proyecto de prototipo para bienestar y foco en oficinas. No es instrumento médico, diagnóstico ni tratamiento. Úsese bajo supervisión y conforme a políticas de privacidad y seguridad vigentes.
+Elige la que uses en el repo (MIT/Apache-2.0/GPL-3.0).
