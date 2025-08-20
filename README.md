@@ -217,10 +217,6 @@ policies:
 README.md
 ```
 
-## 📁 Módulo de ritmo cardíaco en el mouse (biofeedback contextual)
-
-Integrar un sensor de pulso (MAX3010x) dentro del mouse nos permite medir el BPM de forma pasiva mientras la persona trabaja y correlacionarlo con el ambiente que monitorea WorkSense (ruido, luz, temperatura, vibración). Cuando el sistema detecta desviaciones sostenidas respecto al rango personal/esperado (p. ej., BPM alto por encima de 110 o bajo por debajo de 50 durante varios segundos), genera micro-intervenciones: un nudje visual en la pantalla y un coach de respiración breve (por audio local) para ayudar a volver a un estado estable. A nivel de analítica, no se guarda señal cruda, solo métricas agregadas (BPM/ventanas de tiempo) y marcas de eventos (“pico de ruido 10:42 → BPM ↑ durante 3 min”), lo que permite a RR. HH./Facilities entender cómo el entorno afecta a las personas y priorizar acciones (quiet hours, films/persianas ante deslumbramiento, mover equipos ruidosos, ajustar setpoints). Esto es bienestar y foco, no diagnóstico médico: el objetivo es avisar a la persona a tiempo y enseñar hábitos de recuperación (respiración 4-2-6, pausas breves, cambio de zona) mientras el informe diario traduce los hallazgos en recomendaciones operables para mejorar el lugar de trabajo.
-
 ---
 
 ## ⚠️ Disclaimer
