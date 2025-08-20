@@ -30,15 +30,6 @@ Al cierre del día, genera un **resumen claro** con *qué pasó, a qué hora y q
 - **Señalización local**: NeoPixel tipo semáforo (prioridad: **tap** → **ruido** → **luz**).  
 - **Escalable**: bajo costo por nodo, listo para múltiples áreas.
 
----
-
-## 🎯 Lo que verás en la demo (2 min)
-
-1. **Aplausos** → detecta **ruido alto** y sugiere mover llamadas.  
-2. **Linterna / tapar LDR** → detecta **deslumbrante / oscuro** y sugiere ajustar persianas/iluminación.  
-3. **Tocar el NTC** → registra **delta térmico** y propone ventilar/ajustar setpoint.  
-4. **Golpecito en la mesa** → evento de **vibración**.  
-5. **Cierre del día** → **informe** con horas clave y **acciones** para mañana.
 
 ---
 
