@@ -88,21 +88,20 @@ Al cierre del día, genera un **resumen claro** con *qué pasó, a qué hora y q
 
 ---
 
+## 🎥 Video recomendado
 
----
+> Psicología aplicada al trabajo: foco, bienestar y rendimiento.
 
-## 💬 Créditos e inspiración
+[![Adam Grant — How to stop languishing and start finding flow (TED)](https://img.youtube.com/vi/a3zPgyvCiJI/maxresdefault.jpg)](https://www.youtube.com/watch?v=a3zPgyvCiJI "Ver en YouTube")
 
-- Psicología organizacional (foco/flow), seguridad psicológica y hábitos de trabajo saludables.  
-- Buen diseño de ambientes: menos fricción, más energía para lo importante.
+<details>
+  <summary>Más charlas útiles (opcional)</summary>
 
-## 📎 Enlaces y fuentes clave
+[![Amy Edmondson — Building a psychologically safe workplace (TEDx)](https://img.youtube.com/vi/LhoLuui9gX8/hqdefault.jpg)](https://www.youtube.com/watch?v=LhoLuui9gX8 "Ver en YouTube")
 
-- **OMS — Salud mental en el trabajo** (datos globales, 12B días perdidos; US$1T). :contentReference[oaicite:5]{index=5}  
-- **Adam Grant (TED) — Flow y foco**. :contentReference[oaicite:6]{index=6}  
-- **Amy Edmondson (TEDx) — Seguridad psicológica**. :contentReference[oaicite:7]{index=7}  
-- **Shawn Achor (TED) — Felicidad y productividad**. :contentReference[oaicite:8]{index=8}  
-- **Ruido en oficinas abiertas — efecto de habla inteligible**. :contentReference[oaicite:9]{index=9}
+[![Shawn Achor — The happy secret to better work (TED)](https://img.youtube.com/vi/fLJsdqxnZb0/hqdefault.jpg)](https://www.youtube.com/watch?v=fLJsdqxnZb0 "Ver en YouTube")
+
+</details>
 
 ---
 
