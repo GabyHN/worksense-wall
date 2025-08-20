@@ -43,6 +43,10 @@ Al cierre del día, genera un **resumen claro** con *qué pasó, a qué hora y q
 
 **Opcional (nube):** publica métricas a Adafruit IO para un tablero web de pared.
 
+## 🖼️ Vista del dispositivo
+
+![WorkSense — render del dispositivo](docs/images/worksense-device-render.png)
+
 ---
 
 ## 📈 Indicadores que sí mueven la aguja
