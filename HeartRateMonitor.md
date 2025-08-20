@@ -127,9 +127,9 @@ Endpoints clave:
 En el **sketch** (archivo `.ino`) ajusta:
 
 ```cpp
-const char* SSID        = "ARRIS-5308";
-const char* PASS        = "50A5DC0A5308";
-const char* SERVER_HOST = "192.168.0.8";
+const char* SSID        = *******;
+const char* PASS        = *******;
+const char* SERVER_HOST = "192.169.*.*";
 const uint16_t SERVER_PORT = 8000;
 ```
 
