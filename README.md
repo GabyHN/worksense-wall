@@ -71,31 +71,6 @@ Al cierre del día, genera un **resumen claro** con *qué pasó, a qué hora y q
 
 ---
 
-## ⚙️ Instalación rápida (demo)
-
-1. **/firmware**: copiar `code.py` y `secrets.py` a la unidad **CIRCUITPY** (ESP32/CircuitPython).  
-2. **(Opcional) Dashboard**: crear feeds `worksense.noise_ratio`, `worksense.luz_pct`, `worksense.ntc_delta`, `worksense.tap_recent` y `worksense.json` en Adafruit IO.  
-3. **(Opcional) Informe diario**: script en `/pc` que resume el día en lenguaje humano.
-
----
-
-## 🎥 Video recomendado
-
-> Psicología aplicada al trabajo: foco, bienestar y rendimiento.
-
-[![Adam Grant — How to stop languishing and start finding flow (TED)](https://img.youtube.com/vi/a3zPgyvCiJI/maxresdefault.jpg)](https://www.youtube.com/watch?v=a3zPgyvCiJI "Ver en YouTube")
-
-<details>
-  <summary>Más charlas útiles (opcional)</summary>
-
-[![Amy Edmondson — Building a psychologically safe workplace (TEDx)](https://img.youtube.com/vi/LhoLuui9gX8/hqdefault.jpg)](https://www.youtube.com/watch?v=LhoLuui9gX8 "Ver en YouTube")
-
-[![Shawn Achor — The happy secret to better work (TED)](https://img.youtube.com/vi/fLJsdqxnZb0/hqdefault.jpg)](https://www.youtube.com/watch?v=fLJsdqxnZb0 "Ver en YouTube")
-
-</details>
-
----
-
 ## ⚠️ Disclaimer
 
 Prototipo para bienestar y productividad. No sustituye instrumentos ni evaluaciones de seguridad industrial.
