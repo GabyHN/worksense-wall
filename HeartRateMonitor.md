@@ -1,6 +1,6 @@
 WorkSense Pulse — Sensor de Ritmo Cardiaco (ESP32 + MAX3010x + TTS)
 
-Biofeedback en el puesto de trabajo: un sensor de pulso (MAX3010x) embebido en el mouse mide BPM en tiempo real; el ESP32 muestra semáforo (NeoPixel), emite sonidos (beeps/sirena) cuando sales de rango y, si la situación persiste, pide al server FastAPI un audio de guía (TTS), lo reproduce y muestra por consola el texto y la URL del WAV.
+Biofeedback en el puesto de trabajo. Un sensor de pulso (MAX3010x) embebido en el mouse mide BPM en tiempo real; el ESP32 muestra semáforo (NeoPixel), emite beeps/sirena cuando sales de rango y, si la situación persiste, solicita al server FastAPI un audio de guía (TTS), lo reproduce y muestra en consola el texto y la URL del WAV.
 
 ⚠️ No es un dispositivo médico. Prototipo para bienestar y foco. No sustituye evaluaciones clínicas ni de seguridad ocupacional.
 
@@ -14,7 +14,7 @@ Serial (cada ~1.8 s):
 
 IR=102345  BPM=76.5  Avg BPM=77
 [TTS] Texto:
-Tu ritmo es elevado...
+Tu ritmo es elevado. Vamos a respirar juntas...
 [TTS] URL: http://192.168.0.8:8000/out/tts8k_2025...
 
 
@@ -34,31 +34,31 @@ Precaución: beep doble periódico (grave para bajo, agudo para alto)
 
 Alerta: sirena barrida periódica
 
-TTS: guía breve cuando se sostiene la condición (enlace y texto por serie)
+TTS: guía breve cuando se sostiene la condición (se imprime texto + URL)
 
-📝 Informe/uso diario (para integrar con WorkSense)
+📝 Cómo usar el informe en WorkSense
 
-Indicadores útiles:
+Indicadores:
 
 % de tiempo en rango (meta ≥80%)
 
-Eventos de BPM alto/bajo (con hora y duración)
+Eventos de BPM alto/bajo (hora y duración)
 
 Minutos en alerta sostenida
 
 Tendencias por franja y por persona/puesto
 
-Ejemplos de acciones:
+Acciones ejemplo:
 
-Reforzar pausas breves/respiración 4–2–6 en horas de picos
+Pausas breves/respiración 4–2–6 en horas de picos
 
 Revisar zona/ruido/luz si se correlacionan con aumentos de BPM
 
-Señalizar “zonas de foco” y llamadas en phone booths
+Señalizar “zonas de foco” y derivar llamadas a phone booths
 
-(Los datos crudos y CSV pueden vivir en el repo WorkSense principal; este módulo expone tiempos y eventos.)
+Los datos crudos/eventos pueden integrarse al dashboard WorkSense; este módulo expone tiempos y eventos.
 
-🔧 Sensores y métricas (hardware)
+🔧 Hardware (demo)
 
 MAX30102/MAX30105 (I²C) — ritmo cardiaco (IR)
 
@@ -66,7 +66,7 @@ NeoPixel (IO2) — semáforo de estado
 
 Audio: DAC interno del ESP32 (IO26) → LM386 → parlante 8 Ω
 
-Acopla con 0.047–0.1 µF en serie y 10 kΩ a GND (filtra DC)
+0.047–0.1 µF en serie y 10 kΩ a GND en la entrada del LM386 (filtra DC)
 
 Cables cortos y GND común
 
@@ -78,13 +78,13 @@ MAX3010x SCL	22
 NeoPixel DIN	2
 DAC → LM386 IN	26
 3V3/VIN + GND	—
-🏗️ Arquitectura simple
+🏗️ Arquitectura
 
-ESP32 (Arduino):
+ESP32 (Arduino)
 
-Lee IR del MAX3010x y detecta latidos con heartRate.h
+Lee IR del MAX3010x; detecta latidos con heartRate.h
 
-Suaviza con ventana RATE_SIZE=4 → beatAvg
+Suaviza (RATE_SIZE=4) → beatAvg
 
 Umbrales:
 
@@ -92,15 +92,15 @@ Precaución: 50–110 BPM
 
 Alerta: <40 o >130 BPM
 
-Si permanece fuera de rango ≥ 5 s:
+Si permanece fuera de rango ≥5 s:
 
-Emite beeps/sirena continuos según estado
+Beep/Sirena periódicos (mientras siga fuera de rango)
 
-Solicita TTS al server (/reply), reproduce WAV (8 kHz/8-bit/mono)
+Solicita TTS al server (POST /reply), reproduce WAV (8 kHz/8-bit/mono)
 
-Imprime el texto que dijo y la URL del audio
+Imprime el texto y la URL del audio
 
-Server (Python/FastAPI):
+Server (FastAPI/Python)
 
 POST /reply: recibe texto → pyttsx3+pydub → WAV 8 kHz/8-bit mono
 
@@ -121,16 +121,22 @@ pip install fastapi uvicorn[standard] python-dotenv pydub imageio-ffmpeg pyttsx3
 GEMINI_API_KEY=TU_API_KEY
 
 
-Ejecuta
+Arranque
 
 uvicorn server:app --host 0.0.0.0 --port 8000 --reload
 
 
-Prueba http://<IP_PC>:8000/ping → {"ok":true,"msg":"pong"}
+Prueba: http://<IP_PC>:8000/ping → {"ok":true,"msg":"pong"}
+
+Ejemplo cURL
+
+curl -X POST http://<IP_PC>:8000/reply \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Prueba de voz desde el servidor."}'
 
 2) Firmware (ESP32)
 
-Abre el sketch y ajusta:
+En el sketch ajusta:
 
 const char* SSID = "ARRIS-5308";
 const char* PASS = "50A5DC0A5308";
@@ -138,20 +144,9 @@ const char* SERVER_HOST = "192.168.0.8";
 const uint16_t SERVER_PORT = 8000;
 
 
-Compila/flash.
+Compila/flash y abre Monitor Serie @115200.
 
-Abre Monitor Serie @115200.
-
-Prueba TTS manual
-
-curl -X POST http://192.168.0.8:8000/reply \
-  -H "Content-Type: application/json" \
-  -d '{"text":"Prueba de voz desde el servidor."}'
-
-
-Deberías ver [TTS] URL: ... y el ESP32 reproducirá el wav.
-
-🧠 Reglas de decisión (en firmware)
+🧠 Reglas de decisión (firmware)
 
 OK (50 ≤ Avg ≤ 110): LED verde, sin sonido
 
@@ -161,9 +156,9 @@ Alerta (<40 o >130): LED rojo, sirena cada 1.5 s
 
 Si fuera de rango ≥ 5 s → pedir TTS (cooldown 30 s), imprimir texto y URL, reproducir audio
 
-Los beeps/sirena siguen sonando periódicamente mientras permanezca fuera de rango; el TTS tiene cooldown para no saturar.
+Los beeps/sirena continúan mientras permanezca fuera de rango; el TTS tiene cooldown para no saturar.
 
-⚙️ Parámetros clave (editables)
+⚙️ Parámetros clave
 // Detección
 const byte RATE_SIZE = 4;        // ventana de suavizado
 const int  sampleRate = 200;     // MAX3010x
@@ -176,16 +171,10 @@ const int BPM_ALERT_LOW  = 40;
 const int BPM_ALERT_HIGH = 130;
 
 // Ventanas / períodos
-const unsigned long WINDOW_MS            = 5000;
-const unsigned long ALERT_COOLDOWN_MS    = 30000;
-const unsigned long WARN_BEEP_PERIOD_MS  = 2000;
-const unsigned long ALERT_SIREN_PERIOD_MS= 1500;
-
-🔒 Privacidad
-
-No se transmite audio crudo ni datos personales.
-
-Solo se usan métricas agregadas y mensajes breves.
+const unsigned long WINDOW_MS             = 5000;
+const unsigned long ALERT_COOLDOWN_MS     = 30000;
+const unsigned long WARN_BEEP_PERIOD_MS   = 2000;
+const unsigned long ALERT_SIREN_PERIOD_MS = 1500;
 
 🧪 Flujo de demo (2 min)
 
@@ -196,6 +185,12 @@ Simula alto BPM (movimiento, apretar dedo) → amarillo/rojo + beeps/sirena.
 Tras ~5 s, el ESP32 pide TTS → suena voz; en serie: Texto y URL.
 
 Vuelve a rango → verde y silencio.
+
+🔒 Privacidad
+
+No se transmite audio crudo ni datos personales.
+
+Solo se usan métricas agregadas y mensajes breves.
 
 🧰 Solución de problemas
 
@@ -209,7 +204,7 @@ IR típico con dedo: 60k–140k.
 
 Audio distorsionado/zumbido
 
-Revisa cap en serie (0.047–0.1 µF) y 10 kΩ a GND en la entrada del LM386.
+Revisa 0.047–0.1 µF en serie y 10 kΩ a GND en la entrada del LM386.
 
 Cables cortos; evita rutas cerca de la antena Wi-Fi.
 
@@ -219,7 +214,7 @@ No reproduce pero imprime URL
 
 Verifica que el ESP32 alcance http://SERVER_HOST:PORT/out/... en la misma red.
 
-Server corriendo con puerto 8000 y firewall abierto.
+Server corriendo (puerto 8000) y firewall abierto.
 
 🧩 Políticas (YAML, ejemplo futuro)
 policies:
