@@ -6,8 +6,6 @@
 
 ---
 
-## 🚀 Elevator pitch (60 s)
-
 **WorkSense** mide lo que *sabotea* la concentración —ruido, deslumbramientos, microcambios térmicos y vibraciones—, lo procesa **en el propio dispositivo** y te dice **qué hacer ahora** (en lenguaje humano):  
 *“12:00–13:00: baja persianas en ala Este”*, *“mueve llamadas a phone booths”*, *“ventila 10 minutos”*.  
 Al cierre del día, genera un **resumen claro** con *qué pasó, a qué hora y qué decisión tomar mañana*. Es **instalación exprés**, **bajo costo** y **obsesionado con la acción**, no con dashboards que nadie ve.
