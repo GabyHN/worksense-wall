@@ -1,83 +1,120 @@
-WorkSense — El dispositivo inteligente que convierte tu oficina en un lugar donde la gente quiere trabajar
+# WorkSense — El dispositivo inteligente que convierte tu espacio de trabajo en un lugar donde la gente *quiere* estar
+**Ruido · Luz · Temperatura · Vibración · Acciones concretas**
 
-Sueño grande: espacios que cuidan a las personas mientras trabajan.
-Cómo lo logramos: un dispositivo compacto que escucha, observa y entiende el entorno (ruido, luz, temperatura, vibración) y propone acciones concretas para mantener condiciones óptimas de foco, bienestar y rendimiento.
+> **Sueño grande:** oficinas que cuidan a las personas **mientras trabajan**.  
+> **Cómo lo logramos:** un dispositivo compacto que *escucha, observa y entiende* el entorno y propone **acciones simples** para mantener condiciones **óptimas** de foco, bienestar y rendimiento.
 
-WorkSense mide lo que sabotea la concentración —ruido, deslumbramiento, microcambios térmicos y vibraciones—, lo procesa en el dispositivo y te dice qué hacer ahora (en lenguaje humano): “baja persianas en el ala este 12:00–13:00”, “mueve las llamadas a phone booths”, “ventila 10 minutos”.
-Al cierre del día, genera un informe claro con qué pasó, a qué hora y qué decisión tomar mañana.
-Es instalación exprés, bajo costo y obsesionado con la acción, no con dashboards bonitos que nadie mira.
+---
 
-❤️ ¿Por qué esto importa?
+## 🚀 Elevator pitch (60 s)
 
-El bienestar no es “nice to have”. La OMS estima 12 mil millones de jornadas laborales perdidas al año por depresión y ansiedad; US$1 billón en productividad. El entorno de trabajo sí influye: sobrecarga, ruido y condiciones pobres empeoran la salud mental y el rendimiento. 
-Organización Mundial de la Salud
-+2
-Organización Mundial de la Salud
-+2
+**WorkSense** mide lo que *sabotea* la concentración —ruido, deslumbramientos, microcambios térmicos y vibraciones—, lo procesa **en el propio dispositivo** y te dice **qué hacer ahora** (en lenguaje humano):  
+*“12:00–13:00: baja persianas en ala Este”*, *“mueve llamadas a phone booths”*, *“ventila 10 minutos”*.  
+Al cierre del día, genera un **resumen claro** con *qué pasó, a qué hora y qué decisión tomar mañana*. Es **instalación exprés**, **bajo costo** y **obsesionado con la acción**, no con dashboards que nadie ve.
 
-El ruido en oficinas abiertas reduce atención y desempeño cognitivo; basta con voces inteligibles para mermar tareas complejas. 
-sciencedirect.com
-pmc.ncbi.nlm.nih.gov
+---
 
-Nuestro enfoque: medir → interpretar → actuar. Si no produce una decisión clara, no sirve.
+## ❤️ ¿Por qué importa?
 
-🧠 Inspiración (videos para ver ya)
+- El ambiente físico impacta el **foco, la salud y la productividad**.  
+- El **ruido conversacional** destruye la atención; el **deslumbramiento** fatiga; los **deltas térmicos** incomodan y distraen.  
+- Cuando el entorno ayuda, la gente **fluye**. Cuando estorba, todo se vuelve cuesta arriba.
 
-Adam Grant (psicólogo organizacional) — How to stop languishing and start finding flow (TED). Ideal para hablar de foco y desempeño sostenibles. 
-ted.com
+> **Mantra:** medir → interpretar → **actuar**. Si no produce una decisión clara, no sirve.
 
-Amy Edmondson — Building a psychologically safe workplace (TEDx): la seguridad psicológica es el suelo fértil del rendimiento. 
-YouTube
+---
 
-Bonus: Shawn Achor — The happy secret to better work: felicidad y productividad están conectadas. 
-ted.com
+## 🌟 Lo que nos hace diferentes
 
-🌟 ¿Qué nos hace diferentes?
+- **Acción inmediata**: recomendaciones **temporizadas** y **concretas** (por zona y hora).  
+- **Lenguaje humano**: sin jerga técnica; RR. HH. y Facilities lo entienden a la primera.  
+- **Offline-first**: decide en el dispositivo; la nube es opcional.  
+- **Señalización local**: NeoPixel tipo semáforo (prioridad: **tap** → **ruido** → **luz**).  
+- **Escalable**: bajo costo por nodo, listo para múltiples áreas.
 
-Acción inmediata: recomendaciones concretas y temporizadas (“12:00–12:20 baja persianas en ala este”).
+---
 
-Lenguaje humano: sin jerga técnica; RR. HH. y Facilities lo entienden a la primera.
+## 🎯 Lo que verás en la demo (2 min)
 
-Offline-first: decide en el dispositivo; la nube es opcional.
+1. **Aplausos** → detecta **ruido alto** y sugiere mover llamadas.  
+2. **Linterna / tapar LDR** → detecta **deslumbrante / oscuro** y sugiere ajustar persianas/iluminación.  
+3. **Tocar el NTC** → registra **delta térmico** y propone ventilar/ajustar setpoint.  
+4. **Golpecito en la mesa** → evento de **vibración**.  
+5. **Cierre del día** → **informe** con horas clave y **acciones** para mañana.
 
-Señalización local: semáforo a color que guía el comportamiento en el momento.
+---
 
-Escalable y realista: bajo costo por nodo; futuro plug-in a BMS (BACnet/Modbus/KNX/DALI) para automatizar setpoints, persianas y modos “Quiet”.
+## 🔧 De qué está hecho (demo hardware)
 
-🎯 Lo que un juez verá en 2 minutos
+- **TAP/Vibración (IO4):** detecta golpes/eventos (latcheado 3 s para visibilidad).  
+- **Mic (IO36):** ventana rápida (`std/p2p`) y **noise_ratio** relativo al “silencio base”.  
+- **LDR (IO39):** **luz% invertida** (0 = oscuro, 100 = deslumbrante) + zonas.  
+- **NTC (IO34):** baseline **EMA** y **delta** (cambios térmicos percibidos).  
+- **NeoPixel (IO2):** semáforo de estado.
 
-Aplausos → el sistema detecta ruido alto y sugiere mover llamadas.
+**Opcional (nube):** publica métricas a Adafruit IO para un tablero web de pared.
 
-Linterna o tapar LDR → detecta deslumbramiento/oscuridad y sugiere ajustar persianas/iluminación.
+---
 
-Tocar el NTC → registra delta térmico y propone ventilar/ajustar setpoint.
+## 📈 Indicadores que sí mueven la aguja
 
-Golpecito → evento de vibración (muestra alerta, guarda evento).
+- **% de tiempo en confort** (por piso/ala).  
+- **Quiet hours**: cumplimiento vs. violaciones (ruido > umbral).  
+- **Minutos de deslumbramiento** y **episodios térmicos**.  
+- Tendencias por día/semana para justificar decisiones (layout, mantenimiento, horarios).
 
-Cierre del día → informe con horas clave y lista de decisiones para mañana.
+---
 
-🔒 Ética y confianza
+## 🛡️ Privacidad y confianza
 
-Sin audio crudo ni video: solo niveles agregados (nada de espionaje).
+- **Sin audio crudo ni video**; solo niveles agregados.  
+- **Sin PII**.  
+- **Humano en el loop** para cualquier automatización futura del edificio.
 
-Sin PII.
+---
 
-Humano en el loop para cualquier automatización del edificio.
+## 🧭 Roadmap → edificio inteligente
 
-📈 Métricas que mueven la aguja
+- Integración con BMS (BACnet/IP, Modbus, KNX, DALI, Zigbee/Z-Wave o APIs).  
+- Políticas por horario/zona: *si luz% > 85 durante N min → bajar persianas/atenuar iluminación*.  
+- “Quiet mode” automático y tickets por vibraciones anómalas.  
+- Auditoría y reversión con aprobación humana.
 
-% de tiempo en confort (por piso/ala).
+---
 
-Quiet hours: cumplimiento vs. violaciones por ruido.
+## ⚙️ Instalación rápida (demo)
 
-Minutos de deslumbramiento y episodios térmicos por franja.
+1. **/firmware**: copiar `code.py` y `secrets.py` a la unidad **CIRCUITPY** (ESP32/CircuitPython).  
+2. **(Opcional) Dashboard**: crear feeds `worksense.noise_ratio`, `worksense.luz_pct`, `worksense.ntc_delta`, `worksense.tap_recent` y `worksense.json` en Adafruit IO.  
+3. **(Opcional) Informe diario**: script en `/pc` que resume el día en lenguaje humano.
 
-Tendencias semanales que justifican decisiones (layout, mantenimiento, horarios).
+---
 
-🛠️ Detrás del telón (muy breve)
 
-Dispositivo ESP32 (CircuitPython): sensores de ruido (ratio relativo), luz (%), delta térmico y vibración. Señalización con NeoPixel.
+---
 
-Informe diario: redactor en la nube que convierte eventos en acciones priorizadas.
+## 💬 Créditos e inspiración
 
-Dashboard opcional (Adafruit IO / Streamlit) para visualización rápida.
+- Psicología organizacional (foco/flow), seguridad psicológica y hábitos de trabajo saludables.  
+- Buen diseño de ambientes: menos fricción, más energía para lo importante.
+
+## 📎 Enlaces y fuentes clave
+
+- **OMS — Salud mental en el trabajo** (datos globales, 12B días perdidos; US$1T). :contentReference[oaicite:5]{index=5}  
+- **Adam Grant (TED) — Flow y foco**. :contentReference[oaicite:6]{index=6}  
+- **Amy Edmondson (TEDx) — Seguridad psicológica**. :contentReference[oaicite:7]{index=7}  
+- **Shawn Achor (TED) — Felicidad y productividad**. :contentReference[oaicite:8]{index=8}  
+- **Ruido en oficinas abiertas — efecto de habla inteligible**. :contentReference[oaicite:9]{index=9}
+
+---
+
+## ⚠️ Disclaimer
+
+Prototipo para bienestar y productividad. No sustituye instrumentos ni evaluaciones de seguridad industrial.
+
+---
+
+> **Mensaje final:** *La tecnología vale cuando hace que el trabajo se sienta bien y salga mejor.*  
+> **WorkSense** convierte el entorno en un aliado — **hoy**.
+
+
